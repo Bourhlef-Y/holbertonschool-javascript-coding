@@ -1,1 +1,6 @@
 node_modules/
+*.json
+*.config.js
+*main*.js
+.eslintrc.js
+!package.json
