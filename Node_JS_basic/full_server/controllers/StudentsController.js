@@ -1,30 +1,28 @@
-import readDatabase from '../utils';
+const readDatabase = require('../utils');
 
 class StudentsController {
   static getAllStudents(request, response) {
-    readDatabase(process.argv[2] || './database.csv')
-      .then((studentsData) => {
-        response.status(200).send('This is the list of our students\n'
-        + `Number of students in CS: ${studentsData.CS.length}. List: ${studentsData.CS.join(', ')}\n`
-        + `Number of students in SWE: ${studentsData.SWE.length}. List: ${studentsData.SWE.join(', ')}`);
+    readDatabase(process.argv[2])
+      .then((result) => {
+        let responseStr = 'This is the list of our students';
+        Object.entries(result).forEach(([key, value]) => {
+          responseStr += `\nNumber of students in ${key}: ${value.length}. List: ${value.join(', ')}`;
+        });
+        response.status(200).send(responseStr);
       })
-      .catch((error) => { response.status(500).send('Cannot load the database'); });
+      .catch((error) => { response.status(500).send(error.message); });
   }
 
   static getAllStudentsByMajor(request, response) {
-    const { major } = request.params;
-
-    if (major !== 'CS' && major !== 'SWE') {
-      response.status(500).send('Major parameter must be CS or SWE');
-      return;
-    }
-
-    readDatabase(process.argv[2] || './database.csv')
-      .then((studentsData) => {
-        response.status(200).send(`List: ${studentsData[major].join(', ')}`);
+    readDatabase(process.argv[2])
+      .then((result) => {
+        const { major } = request.params;
+        if (Object.prototype.hasOwnProperty.call(result, major)) {
+          response.status(200).send(`List: ${result[major].join(', ')}`);
+        } else { response.status(500).send('Major parameter must be CS or SWE'); }
       })
       .catch((error) => { response.status(500).send(error.message); });
   }
 }
 
-export default StudentsController;
+module.exports = StudentsController;

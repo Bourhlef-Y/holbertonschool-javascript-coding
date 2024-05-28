@@ -7,8 +7,5 @@ const port = 1245;
 
 app.use('/', routes);
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}/`);
-});
-
+app.listen(port);
 module.exports = app;
