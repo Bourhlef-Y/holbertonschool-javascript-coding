@@ -1,38 +1,55 @@
 const fs = require('fs');
 
 function countStudents(path) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(path, 'utf-8', (err, data) => {
-            if (err) {
-                reject(new Error('Cannot load the database'));
-                return;
-            }
+  return new Promise((resolve, reject) => {
+    // Read the file asynchronously
+    fs.readFile(path, 'utf-8', (error, data) => {
+      if (error) {
+        // If there's an error, reject the promise with an error message
+        reject(new Error('Cannot load the database'));
+        return;
+      }
 
-            const lines = data.split('\n').filter(line => line.trim() !== '');
+      // Split data into lines, filter empty lines, skip the header line, map each line to an object
+      const students = data.split('\n').filter(Boolean).slice(1).map((line) => {
+        const [firstname, lastname, age, field] = line.split(',');
+        return {
+          firstname, lastname, age, field,
+        };
+      });
 
-            const students = lines.slice(1).map(line => line.split(',')).filter(fields => fields.length === 4);
-            const numberOfStudents = students.length;
+      // Create an object to store the students by field
+      const studentsByField = {
+        CS: [],
+        SWE: [],
+      };
 
-            console.log(`Number of students: ${numberOfStudents}`);
+      // Iterate over students and add them to the corresponding field in the studentsByField object
+      students.forEach((student) => {
+        if (studentsByField[student.field]) {
+          studentsByField[student.field].push(student.firstname);
+        }
+      });
 
-            const fields = {};
+      // Print the total number of students
+      console.log(`Number of students: ${students.length}`);
 
-            students.forEach(student => {
-                const field = student[3];
-                const firstName = student[0];
-                if (!fields[field]) {
-                    fields[field] = [];
-                }
-                fields[field].push(firstName);
-            });
+      // Print the number of students in CS and their names
+      console.log(`Number of students in CS: ${studentsByField.CS.length || 0}. List: ${studentsByField.CS.join(', ')}`);
 
-            for (const [field, names] of Object.entries(fields)) {
-                console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
-            }
+      // Print the number of students in SWE and their names
+      console.log(`Number of students in SWE: ${studentsByField.SWE.length || 0}. List: ${studentsByField.SWE.join(', ')}`);
 
-            resolve();
-        });
+      // Create object with the total number of students and the number of students in each field
+      const result = {
+        totalNumber: `Number of students: ${students.length}`,
+        CS: `Number of students in CS: ${studentsByField.CS.length || 0}. List: ${studentsByField.CS.join(', ')}`,
+        SWE: `Number of students in SWE: ${studentsByField.SWE.length || 0}. List: ${studentsByField.SWE.join(', ')}`,
+      };
+
+      // Resolve the promise with the result object
+      resolve(result);
     });
+  });
 }
-
 module.exports = countStudents;
