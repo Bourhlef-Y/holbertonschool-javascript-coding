@@ -1,32 +1,26 @@
+/* eslint-disable no-undef */
 const fs = require('fs');
 
 function countStudents(path) {
-    try {
-        const data = fs.readFileSync(path, 'utf-8');
-        const lines = data.split('\n').filter(line => line.trim() !== '');
+  try {
+    const data = fs.readFileSync(path, 'utf-8');
 
-        const students = lines.slice(1).map(line => line.split(',')).filter(fields => fields.length === 4);
-        const numberOfStudents = students.length;
+    const students = data.split('\n').filter(Boolean).slice(1).map((line) => {
+      const [firstName, lastName, age, field] = line.split(',');
+      return {
+        firstName, lastName, age, field,
+      };
+    });
 
-        console.log(`Number of students: ${numberOfStudents}`);
+    const csStudents = students.filter((student) => student.field === 'CS');
+    const sweStudents = students.filter((student) => student.field === 'SWE');
 
-        const fields = {};
-
-        students.forEach(student => {
-            const field = student[3];
-            const firstName = student[0];
-            if (!fields[field]) {
-                fields[field] = [];
-            }
-            fields[field].push(firstName);
-        });
-
-        for (const [field, names] of Object.entries(fields)) {
-            console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
-        }
-    } catch (error) {
-        throw new Error('Cannot load the database');
-    }
+    console.log(`Number of students: ${students.length}`);
+    console.log(`Number of students in CS: ${csStudents.length}. List: ${csStudents.map((student) => student.firstName).join(', ')}`);
+    console.log(`Number of students in SWE: ${sweStudents.length}. List: ${sweStudents.map((student) => student.firstName).join(', ')}`);
+  } catch (error) {
+    throw new Error('Cannot load the database');
+  }
 }
 
 module.exports = countStudents;
